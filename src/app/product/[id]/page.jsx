@@ -1,14 +1,23 @@
 "use client";
+import { CartContext } from "@/context/CartContext";
 import { Amount } from "@/lib/lib";
+import Link from "next/link";
 import { useParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 const Page = () => {
   const { id } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const [singleProduct, setSingleProduct] = useState(null);
   const [error, setError] = useState(null);
+  const { cart, setCart } = useContext(CartContext);
+  const existingIndex = cart.findIndex((item) => item.id === singleProduct?.id);
 
+  const handleAddToCart = (product) => {
+    if (existingIndex === -1) {
+      setCart([...cart, { ...product, quantity: 1 }]);
+    }
+  };
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -28,7 +37,9 @@ const Page = () => {
   }, [id]);
 
   if (isLoading) {
-    return <div className="text-center mt-20 text-lg font-medium">Loading...</div>;
+    return (
+      <div className="text-center mt-20 text-lg font-medium">Loading...</div>
+    );
   }
 
   if (error) {
@@ -54,12 +65,28 @@ const Page = () => {
           <h1 className="text-2xl font-bold">{singleProduct.title}</h1>
           <p className="text-gray-700 text-sm">{singleProduct.description}</p>
           <p className="text-gray-600 text-sm capitalize">
-            Category: <span className="font-medium">{singleProduct.category}</span>
+            Category:{" "}
+            <span className="font-medium">{singleProduct.category}</span>
           </p>
-          <p className="text-xl font-semibold text-gray-600">{Amount(singleProduct.price)}</p>
-          <button className="px-5 py-2 bg-gray-700 text-white rounded hover:bg-gray-900 transition">
-            Add to Cart
-          </button>
+          <p className="text-xl font-semibold text-gray-600">
+            {Amount(singleProduct.price)}
+          </p>
+
+          {existingIndex === -1 ? (
+            <button
+              className="px-5  bg-gray-800 text-white py-2 text-sm"
+              onClick={() => handleAddToCart(singleProduct)}
+            >
+              Add to Cart
+            </button>
+          ) : (
+            <Link
+              href="/cart"
+              className="px-5 bg-gray-800 text-white py-2 text-sm text-center"
+            >
+              Go to Cart
+            </Link>
+          )}
         </div>
       </div>
     </div>
